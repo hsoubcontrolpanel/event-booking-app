@@ -6,7 +6,6 @@ const { typeDefs } = require('./schema/index')
 const { resolvers } = require('./resolvers/index')
 require('dotenv').config()
 const mongoose = require('mongoose')
-
 async function startApolloServer(typeDefs, resolvers){
     const app = express()
     const httpServer = http.createServer(app)
