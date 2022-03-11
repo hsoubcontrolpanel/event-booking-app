@@ -3,6 +3,7 @@ const { UserInputError, AuthenticationError } = require('apollo-server-express')
 const bcrypt = require('bcryptjs')
 const jwt = require('jsonwebtoken')
 const Event = require('../models/event')
+const Booking = require('../models/booking')
 const resolvers = {
     Query: {
         events: async () => {
@@ -17,6 +18,21 @@ const resolvers = {
             try {
                 const events = await Event.find({ creator: userId }).populate('creator')
                 return events.map( event => ({ ...event._doc, date: event.date.toDateString() }))
+            } catch (err) {
+                throw err
+            }
+        }, 
+        bookings: async (_, __, context) => {
+            if (!context.user){
+                throw new AuthenticationError('يجب تسجيل دخولك!')
+            }
+            try {
+                const bookings = await Booking.find({ user: context.user._id}).populate('event').populate('user')
+                return bookings.map(booking => ({
+                    ...booking._doc,
+                    createdAt: booking.createdAt.toDateString(),
+                    updatedAt: booking.updatedAt.toDateString()  
+                }))
             } catch (err) {
                 throw err
             }
@@ -96,6 +112,43 @@ const resolvers = {
             try {
                 await Event.deleteOne({ _id: args.eventId }).populate('creator')
                 return Event.find({})
+            } catch (err) {
+                throw err
+            }
+        },
+        bookEvent: async (_, args, context) => {
+            if (!context.user){
+                throw new AuthenticationError('يجب تسجيل دخولك!')
+            }
+            const existingBooking= await Booking.find({ event: args.eventId }).find({ user: context.user })
+            if (existingBooking.length > 0) {
+                throw new UserInputError('قد حجزت هذا الحدث بالفعل مسبقًا!')
+            }
+            const fetchedEvent = await Event.findOne({ _id: args.eventId })
+            const booking = new Booking({
+                user: context.user._id,
+                event: fetchedEvent
+            })
+            try {
+                await booking.save()
+                return { 
+                    ...booking._doc,
+                    createdAt: booking.createdAt.toDateString(),
+                    updatedAt: booking.updatedAt.toDateString()  
+                }
+            } catch (err) {
+                throw err
+            }
+        },
+        cancelBooking: async (_, args, context) => {
+            if (!context.user){
+                throw new AuthenticationError('يجب تسجيل دخولك!')
+            }
+            try {
+                const booking = await Booking.findById(args.bookingId).populate('event')
+                const event = { ...booking.event._doc, date: booking.event.date.toDateString() }
+                await Booking.deleteOne({ _id: args.bookingId })
+                return event
             } catch (err) {
                 throw err
             }
