@@ -5,7 +5,7 @@ export default function EventsPage() {
     function EventList(){
         const { loading, error, data } = useQuery(EVENTS)
         if (loading) return <p>Loading...</p>;
-        if (error) return <p>Error :(</p>;
+        if (error) return error.message;
         return data.events.map(({ _id, title, description }) => (
             <div key={_id}>
                 <p>{title} : {description}</p>

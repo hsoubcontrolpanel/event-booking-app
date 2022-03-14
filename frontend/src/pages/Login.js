@@ -1,16 +1,26 @@
 import { useMutation } from '@apollo/client';
-import React, { useState} from 'react';
+import React, { useContext, useEffect, useState} from 'react';
 import { LOGIN } from '../queries'
 import { useNavigate } from 'react-router-dom'
-
+import AuthContext from '../context/auth-context';
 export default function LoginPage() {
+    const value = useContext(AuthContext)
     const [email, setEmail] = useState('')
     const [password, setPassword] = useState('')
     const navigate = useNavigate()
+
     function Login(){
         const [login, { loading, error, data }] = useMutation(LOGIN, {
             onCompleted: () => console.log("تم تسجيل الدخول بنجاج")
         })
+        useEffect( () => {
+            if(!loading && data){
+                const token = data.login.token
+                const userId = data.login.userId
+                const username = data.login.username
+                value.login(token, userId, username)
+            }
+        }, [data, loading])
         if (loading) return <p>Loading...</p>
         if (error) return error.message
         if(data){

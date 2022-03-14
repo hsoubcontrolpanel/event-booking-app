@@ -11,6 +11,10 @@ const User = require('./models/user')
 async function startApolloServer(typeDefs, resolvers){
     const app = express()
     const httpServer = http.createServer(app)
+    app.use((req, res, next) => {
+        res.setHeader('Access-Control-Allow-Origin', process.env.APP_URL)
+        next()
+    })
     const server = new ApolloServer({
         typeDefs,
         resolvers,

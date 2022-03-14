@@ -1,15 +1,24 @@
-import React, { useState } from 'react';
+import React, { useContext, useState, useEffect } from 'react';
 import { useMutation } from '@apollo/client'
 import { CREATE_USER } from '../queries'
-
+import AuthContext from '../context/auth-context';
 export default function SignUpPage() {
     const [username, setUsername] = useState('')
     const [email, setEmail] = useState('')
     const [password, setPassword] = useState('')
+    const value = useContext(AuthContext)
     function SignUp(){
         const [signup, { loading, error, data }] = useMutation(CREATE_USER, {
             onCompleted: () => console.log("تم انشاء الحساب بنجاج")
         })
+        useEffect( () => {
+            if(!loading && data){
+                const token = data.createUser.token
+                const userId = data.createUser.userId
+                const username = data.createUser.username
+                value.login(token, userId, username)
+            }
+        }, [data, loading])
         if (loading) return <p>Loading...</p>
         if (error) return error.message
         if(data){
