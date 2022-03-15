@@ -5,14 +5,18 @@ import { EVENTS, BOOK_EVENT } from '../queries'
 import EventItem from '../components/EventItem'
 import SimpleModal from '../components/SimpleModal'
 import AuthContext from '../context/auth-context'
-
+import Error from '../components/Error'
 export default function EventsPage() {
     const [selectedEvent, setSelectedEvent] = useState(null)
+    const [alert, setAlert] = useState("")
     const value = useContext(AuthContext)
     function EventList(){
         const { loading, error, data } = useQuery(EVENTS)
         if (loading) return <p>Loading...</p>
-        if (error) return error.message
+        if (error){
+            setAlert(error.message)
+            return ;
+        } 
 
         const showDetailHandler = eventId => {
             const clickedEvent = data.events.find(event => event._id === eventId)
@@ -36,16 +40,17 @@ export default function EventsPage() {
     const [bookEventHandler] = useMutation(BOOK_EVENT, {
         onError: (error) => {
             setSelectedEvent(null)
-            console.log(error.message)
+            setAlert(error.message)
         },
         onCompleted: () => {
             setSelectedEvent(null)
-            console.log('تم حجو المناسبة بنجاح')
+            setAlert('تم حجز المناسبة بنجاح')
         }
     })
 
     return (
         <div>
+            <Error error={alert} />
             {value.token && (
                 <div className='events-control pt-2 text-center pb-3'>
                     <h2>شارك مناسباتك الخاصة!</h2>
@@ -61,7 +66,10 @@ export default function EventsPage() {
             {selectedEvent && (
                 <SimpleModal
                 title= 'حجز مناسبة'
-                onCancel= { () => { setSelectedEvent(null) } }
+                onCancel= { () => { 
+                    setSelectedEvent(null) 
+                    setAlert("")
+                } }
                 onConfirm= { () => { bookEventHandler({variables: { eventId: selectedEvent._id } })} }
                 confirmText={value.token ? 'احجز' : <NavLink to='/login'>سجل دخول لتحجز</NavLink>}
                 isDisabled= {selectedEvent.creator._id === value.userId ? true : false }
