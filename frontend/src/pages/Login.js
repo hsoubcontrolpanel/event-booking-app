@@ -6,11 +6,11 @@ import AuthContext from '../context/auth-context';
 import Error from '../components/Error';
 export default function LoginPage() {
     const value = useContext(AuthContext)
-    const [email, setEmail] = useState('')
-    const [password, setPassword] = useState('')
     const navigate = useNavigate()
     const [alert, setAlert] = useState("")
     function Login(){
+        const [email, setEmail] = useState('')
+        const [password, setPassword] = useState('')
         const [login, { loading, data }] = useMutation(LOGIN, {
             onError: (error) => setAlert(error.message)
         })
@@ -55,9 +55,11 @@ export default function LoginPage() {
                         minLength="6"
                     />
                 </div>
-                <div className='forma-action'>
-                    <button className='btn m-2' type='submit'>إرسال</button>
-                    <button className='btn' onClick={() => navigate('/signUp')}> انتقل الى انشاء الحساب </button>
+                <div className='form-actions'>
+                    <button className='btn m-2' type='submit' >إرسال</button>
+                    <button className='btn' onClick={() => navigate('/signUp')}>
+                        انتقل إلى إنشاء حساب
+                    </button>
                 </div>
             </form>
         )

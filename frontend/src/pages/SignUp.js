@@ -4,12 +4,12 @@ import { CREATE_USER } from '../queries'
 import Error from '../components/Error';
 import AuthContext from '../context/auth-context';
 export default function SignUpPage() {
-    const [username, setUsername] = useState('')
-    const [email, setEmail] = useState('')
-    const [password, setPassword] = useState('')
     const value = useContext(AuthContext)
     const [alert, setAlert] = useState("")
     function SignUp(){
+        const [username, setUsername] = useState('')
+        const [email, setEmail] = useState('')
+        const [password, setPassword] = useState('')
         const [signup, { loading, data }] = useMutation(CREATE_USER, {
             onError: (error) => setAlert(error.message),
             onCompleted: () => setAlert("تم انشاء الحساب بنجاج")
